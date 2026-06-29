@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinTrack Pro | Enterprise Finance Ledger</title>
+
+    <!--  Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <!--  Icon Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+    <!-- Styleshee -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- TOAST NOTIFICATION CONTAINER (success / error) -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-------- 1. REGISTER PAGE  ------->
+    <section id="registerPage" class="auth-page">
+        <div class="auth-backdrop"></div>
+
+        <div class="auth-card">
+            <div class="auth-brand">
+                <i class="ri-stack-line"></i>
+                <div>
+                    <h1>FinTrack Pro</h1>
+                    <span>Enterprise Finance Ledger</span>
+                </div>
+            </div>
+
+            <h2 class="auth-title">Create Account</h2>
+            <p class="auth-subtitle">Join FinTrack Pro and start tracking your money.</p>
+
+            <form id="registerForm" class="auth-form" novalidate>
+                <div class="form-field">
+                    <label for="regUsername">Choose a Username</label>
+                    <div class="input-with-icon">
+                        <i class="ri-user-3-line"></i>
+                        <input type="text" id="regUsername" placeholder="Username" autocomplete="username" />
+                    </div>
+                    <span class="field-error" id="regUsernameError"></span>
+                </div>
+
+                <div class="form-field">
+                    <label for="regPassword">Password</label>
+                    <div class="input-with-icon">
+                        <i class="ri-lock-2-line"></i>
+                        <input type="password" id="regPassword" placeholder="Minimum 6 characters"
+                            autocomplete="new-password" />
+                        <button type="button" class="toggle-visibility" data-target="regPassword"
+                            aria-label="Toggle password visibility">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                    </div>
+                    <span class="field-error" id="regPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="ri-user-add-line"></i> Register
+                </button>
+
+                <p class="auth-switch">
+                    Already have an account? <a href="#" id="goToLogin">Login here</a>
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <!---------- 2. LOGIN PAGE ------------>
+    <section id="loginPage" class="auth-page hidden">
+        <div class="auth-backdrop"></div>
+
+        <div class="auth-card">
+            <div class="auth-brand">
+                <i class="ri-stack-line"></i>
+                <div>
+                    <h1>FinTrack Pro</h1>
+                    <span>Enterprise Finance Ledger</span>
+                </div>
+            </div>
+
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Login to FinTrack Pro to view your ledger.</p>
+
+            <form id="loginForm" class="auth-form" novalidate>
+                <div class="form-field">
+                    <label for="loginUsername">Username</label>
+                    <div class="input-with-icon">
+                        <i class="ri-user-3-line"></i>
+                        <input type="text" id="loginUsername" placeholder="Enter your username"
+                            autocomplete="username" />
+                    </div>
+                    <span class="field-error" id="loginUsernameError"></span>
+                </div>
+
+                <div class="form-field">
+                    <label for="loginPassword">Password</label>
+                    <div class="input-with-icon">
+                        <i class="ri-lock-2-line"></i>
+                        <input type="password" id="loginPassword" placeholder="Enter your password"
+                            autocomplete="current-password" />
+                        <button type="button" class="toggle-visibility" data-target="loginPassword"
+                            aria-label="Toggle password visibility">
+                            <i class="ri-eye-line"></i>
+                        </button>
+                    </div>
+                    <span class="field-error" id="loginPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="ri-login-circle-line"></i> Login
+                </button>
+
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" id="goToRegister">Register here</a>
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <!-------- 3. MAIN APPLICATION (Sidebar + Dashboard + Settings)---------->
+    <div id="appShell" class="app-shell hidden">
+
+        <!-- ---------- SIDEBAR ---------- -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="ri-stack-line"></i>
+                <div>
+                    <h1>FinTrack Pro</h1>
+                    <span>Enterprise Finance</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-link active" data-page="dashboardPage">
+                    <i class="ri-dashboard-line"></i> Dashboard
+                </button>
+                <button class="nav-link" data-page="settingsPage">
+                    <i class="ri-settings-3-line"></i> Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="addTransactionBtn" class="btn btn-primary btn-block">
+                    <i class="ri-add-line"></i> Add Transaction
+                </button>
+            </div>
+        </aside>
+
+        <!-- ---------- MAIN CONTENT ---------- -->
+        <div class="main-content">
+
+            <!-- Topbar shared across pages -->
+            <header class="topbar">
+                <div class="topbar-gold-rule"></div>
+                <div class="topbar-inner">
+                    <div class="topbar-page-title" id="topbarTitle">Financial Overview</div>
+                    <div class="topbar-user">
+                        <span class="user-chip">
+                            <i class="ri-user-3-fill"></i>
+                            <span id="topbarUsername">User</span>
+                        </span>
+                        <button id="logoutBtn" class="btn btn-ghost">
+                            <i class="ri-logout-box-r-line"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!----------- DASHBOARD PAGE ----------->
+            <section id="dashboardPage" class="page active">
+                <div class="page-heading">
+                    <h2>Financial Overview</h2>
+                    <p>Real-time tracking application</p>
+                </div>
+
+                <!-- Summary cards -->
+                <div class="cards-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-balance"><i class="ri-bank-line"></i></div>
+                        <div class="stat-label">Current Balance</div>
+                        <div class="stat-value" id="cardBalance">$0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-income"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <div class="stat-label">Total Income</div>
+                        <div class="stat-value text-income" id="cardIncome">$0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                        <div class="stat-label">Total Expense</div>
+                        <div class="stat-value text-expense" id="cardExpense">$0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-count"><i class="ri-exchange-line"></i></div>
+                        <div class="stat-label">Total Transactions</div>
+                        <div class="stat-value" id="cardCount">0</div>
+                    </div>
+                </div>
+
+                <!------------- Chart -------------->
+                <div class="content-grid">
+                    <div class="panel chart-panel">
+                        <div class="panel-header">
+                            <h3><i class="ri-bar-chart-grouped-line"></i> Cash Flow Analysis</h3>
+                            <div class="legend">
+                                <span class="legend-dot dot-income"></span> Income
+                                <span class="legend-dot dot-expense"></span> Expenses
+                            </div>
+                        </div>
+                        <div class="chart-wrap">
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!------ Transactions table ------->
+                <div class="panel table-panel">
+                    <div class="panel-header">
+                        <h3><i class="ri-file-list-3-line"></i> All Transactions</h3>
+                    </div>
+
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="ri-search-line"></i>
+                            <input type="text" id="searchInput" placeholder="Search transactions..." />
+                        </div>
+                        <select id="filterType" class="select-input">
+                            <option value="all">All Types</option>
+                            <option value="income">Income Only</option>
+                            <option value="expense">Expense Only</option>
+                        </select>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionTableBody">
+                                <!-- Rows injected by script.js -->
+                            </tbody>
+                        </table>
+
+                        <!-- Empty state shown by JS when there are no transactions -->
+                        <div class="empty-state hidden" id="emptyState">
+                            <i class="ri-inbox-2-line"></i>
+                            <p>No transactions yet</p>
+                            <span>Click "Add Transaction" to record your first entry.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!---------- SETTINGS PAGE  --------->
+            <section id="settingsPage" class="page">
+                <div class="page-heading">
+                    <h2>Settings</h2>
+                    <p>Manage your account profile and app formatting.</p>
+                </div>
+
+                <div class="panel settings-panel">
+                    <h3 class="settings-section-title"><i class="ri-user-settings-line"></i> Profile Details</h3>
+
+                    <form id="settingsForm" class="settings-grid">
+                        <div class="form-field">
+                            <label for="settingsFullName">Full Name</label>
+                            <input type="text" id="settingsFullName" placeholder="Your name" />
+                        </div>
+
+                        <div class="form-field">
+                            <label for="settingsCurrency">Primary Currency</label>
+                            <select id="settingsCurrency" class="select-input">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="INR">INR (₹)</option>
+                                <option value="JPY">JPY (¥)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field span-2">
+                            <button type="submit" class="btn btn-dark">
+                                <i class="ri-save-3-line"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel settings-panel">
+                    <h3 class="settings-section-title"><i class="ri-contrast-2-line"></i> Appearance</h3>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-row-title">Dark Mode</div>
+                            <div class="setting-row-desc">Switch between light and dark ledger themes.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="darkModeToggle" />
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel settings-panel danger-panel">
+                    <h3 class="settings-section-title"><i class="ri-error-warning-line"></i> Danger Zone</h3>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-row-title">Reset All Data</div>
+                            <div class="setting-row-desc">Permanently delete every transaction. This cannot be undone.
+                            </div>
+                        </div>
+                        <button id="resetDataBtn" class="btn btn-danger">
+                            <i class="ri-delete-bin-6-line"></i> Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!------------ 4. ADD / EDIT TRANSACTION MODAL ----------->
+    <div id="transactionModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="transactionModalTitle"><i class="ri-add-circle-line"></i> Add Transaction</h3>
+                <button class="modal-close" id="closeTransactionModal" aria-label="Close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <form id="transactionForm" class="modal-body" novalidate>
+                <input type="hidden" id="transactionId" />
+
+                <div class="form-field">
+                    <label for="transactionType">Type</label>
+                    <select id="transactionType" class="select-input">
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="transactionDescription">Description</label>
+                    <input type="text" id="transactionDescription" placeholder="e.g. Salary, Groceries..." />
+                    <span class="field-error" id="transactionDescriptionError"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="transactionAmount">Amount</label>
+                        <input type="number" id="transactionAmount" placeholder="0.00" min="0.01" step="0.01" />
+                        <span class="field-error" id="transactionAmountError"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="transactionDate">Date</label>
+                        <input type="date" id="transactionDate" />
+                        <span class="field-error" id="transactionDateError"></span>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="transactionCategory">Category</label>
+                    <select id="transactionCategory" class="select-input">
+                        <option value="">Select a category</option>
+                        <option value="Food & Dining">Food & Dining</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Recharge & Bills">Recharge & Bills</option>
+                        <option value="Petrol & Auto">Petrol & Auto</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Salary">Salary</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span class="field-error" id="transactionCategoryError"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" id="cancelTransactionBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-3-line"></i> <span id="transactionSubmitLabel">Save Transaction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!----- 5. CONFIRM DIALOG (used for Delete + Reset All Data) ------>
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal-card confirm-card">
+            <div class="confirm-icon"><i class="ri-error-warning-line"></i></div>
+            <h3 id="confirmTitle">Are you sure?</h3>
+            <p id="confirmMessage">This action cannot be undone.</p>
+            <div class="modal-footer center">
+                <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmOkBtn">Yes, Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
