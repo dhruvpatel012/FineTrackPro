@@ -1,39 +1,14 @@
-/* 1. Storage Keys & Helpers      (talking to Local Storage)
-   2. Toast Notifications          (success / error messages)
-   3. Authentication               (register, login, logout)
-   4. Page Navigation              (dashboard <-> settings)
-   5. Transactions Data Layer      (load / save / add / edit / delete)
-   6. Rendering                    (cards, table, chart)
-   7. Search & Filter
-   8. Settings (profile, currency, dark mode, reset)
-   9. Modals                       (add/edit transaction, confirm dialog)
-   10. Event Listeners             (wiring everything together)
-   11. App Init                    (what runs the moment the page loads) */
+// --- Storage: persistence helpers ---
 
-
-/* 1. STORAGE KEYS & HELPERS
-   Everything the app remembers lives in localStorage as JSON
-   text. These helper functions are the ONLY place that talk to
-   localStorage directly — every other part of the app calls
-   these instead of using localStorage.getItem/setItem itself.
-  */
-
-// All registered accounts live under this single key.
-// Example value: [{ username: "nobita", password: "12345" }]
 const STORAGE_USERS = "fintrackpro_users";
-
-// Which username is currently logged in (or null if logged out).
 const STORAGE_SESSION = "fintrackpro_session";
 
-// Helper to build a storage key that is unique PER USER.
-// This means two different accounts never see each other's
-// transactions or settings, even though it's all localStorage.
+// Namespace keys per user to isolate data in local storage
 function userKey(base, username) {
   return `fintrackpro_${base}_${username}`;
 }
 
-// Generic "read JSON from storage" helper.
-// If nothing is saved yet (or it's broken), return fallback instead of crashing.
+// Fallback protects against corrupt JSON payloads or disabled storage
 function readStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -44,17 +19,12 @@ function readStorage(key, fallback) {
   }
 }
 
-// Generic "write JSON to storage" helper.
 function writeStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+// --- Notifications: toast dispatch ---
 
-/* 2. TOAST NOTIFICATIONS
-   Small slide-in cards instead of  alert() popups.
-   Call showToast("message") for success, or
-   showToast("message", true) for an error style
-*/
 function showToast(message, isError = false) {
   const container = document.getElementById("toastContainer");
 
@@ -66,32 +36,21 @@ function showToast(message, isError = false) {
   `;
 
   container.appendChild(toast);
-
-  // Remove the toast automatically after 3 seconds so they don't pile up.
   setTimeout(() => toast.remove(), 3000);
 }
 
+// --- Auth: session management ---
 
-/* 
-   3. AUTHENTICATION
-   register() creates a new account. login() checks the entered
-   username/password against the saved accounts. logout() simply
-   clears the session key. There is no real security here.
-*/
-
-// Read the list of all registered users (or an empty array).
 function getUsers() {
   return readStorage(STORAGE_USERS, []);
 }
 
-// Handles the Register form submit.
 function register(event) {
   event.preventDefault();
 
   const username = document.getElementById("regUsername").value.trim();
   const password = document.getElementById("regPassword").value;
 
-  // Clear any old error messages before re-validating.
   clearFieldError("regUsername");
   clearFieldError("regPassword");
 
@@ -119,18 +78,14 @@ function register(event) {
 
   if (hasError) return;
 
-  // Save the new user alongside everyone else who has registered.
   users.push({ username, password });
   writeStorage(STORAGE_USERS, users);
 
   showToast("Registration successful! You can now log in.");
   document.getElementById("registerForm").reset();
-
-  // Send them straight to the login page, like the reference design.
   showAuthPage("loginPage");
 }
 
-// Handles the Login form submit.
 function login(event) {
   event.preventDefault();
 
@@ -156,23 +111,18 @@ function login(event) {
     return;
   }
 
-  // Save the session so a page refresh keeps the user logged in.
   localStorage.setItem(STORAGE_SESSION, matchedUser.username);
-
   showToast(`Welcome back, ${matchedUser.username}!`);
   document.getElementById("loginForm").reset();
   enterApp(matchedUser.username);
 }
 
-// Handles the Logout button.
 function logout() {
   localStorage.removeItem(STORAGE_SESSION);
   document.getElementById("appShell").classList.add("hidden");
   showAuthPage("loginPage");
 }
 
-// Checks if someone is already logged in (e.g. after a page refresh)
-// and skips straight to the dashboard if so.
 function checkExistingSession() {
   const savedUsername = localStorage.getItem(STORAGE_SESSION);
   if (savedUsername) {
@@ -180,7 +130,6 @@ function checkExistingSession() {
   }
 }
 
-// Switches from the auth screens into the main app shell.
 function enterApp(username) {
   currentUser = username;
 
@@ -190,15 +139,12 @@ function enterApp(username) {
 
   document.getElementById("topbarUsername").textContent = username;
 
-  loadSettings();   // applies dark mode + currency + full name
-  refreshDashboard(); // draws cards, table, and chart with this user's data
+  loadSettings();
+  refreshDashboard();
 }
 
+// --- Validation: UI state helpers ---
 
-/* Small validation helpers shared by every form in the app.
-   They just add/remove a CSS class and fill in the <span> that
-   already exists under each input in index.html.
-*/
 function setFieldError(inputId, message) {
   const input = document.getElementById(inputId);
   const errorSpan = document.getElementById(inputId + "Error");
@@ -213,12 +159,8 @@ function clearFieldError(inputId) {
   if (errorSpan) errorSpan.textContent = "";
 }
 
+// --- Navigation: view switching & sidebar ---
 
-/* 
-   4. PAGE NAVIGATION
-   We just hide one and show the other — no real routing,
-   no page reload.
-*/
 function showAuthPage(pageId) {
   document.getElementById("registerPage").classList.add("hidden");
   document.getElementById("loginPage").classList.add("hidden");
@@ -226,18 +168,15 @@ function showAuthPage(pageId) {
 }
 
 function showAppPage(pageId) {
-  // Hide every page, then reveal only the one that was requested.
   document.querySelectorAll(".page").forEach((page) => {
     page.classList.remove("active");
   });
   document.getElementById(pageId).classList.add("active");
 
-  // Update which sidebar link looks "active".
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.classList.toggle("active", link.dataset.page === pageId);
   });
 
-  // Update the title shown in the topbar.
   const titles = {
     dashboardPage: "Financial Overview",
     settingsPage: "Settings",
@@ -245,29 +184,35 @@ function showAppPage(pageId) {
   document.getElementById("topbarTitle").textContent = titles[pageId] || "";
 }
 
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  const isOpen = sidebar.classList.toggle("sidebar-open");
+  if (overlay) {
+    overlay.classList.toggle("sidebar-overlay-active", isOpen);
+  }
+}
 
-/* 5. TRANSACTIONS DATA LAYER
-   Every transaction looks like:
-   { id, type: "income"|"expense", description, amount, date, category }
-*/
+function closeSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (sidebar) sidebar.classList.remove("sidebar-open");
+  if (overlay) overlay.classList.remove("sidebar-overlay-active");
+}
 
-// Keeps track of who is logged in right now, set by enterApp().
+// --- Transactions: data management ---
+
 let currentUser = null;
-
-// Keeps track of whether the transaction modal is in "add" or "edit" mode.
 let editingTransactionId = null;
 
-// Loads this user's transactions from storage (empty array if none yet).
 function loadTransactions() {
   return readStorage(userKey("transactions", currentUser), []);
 }
 
-// Saves the full transaction list back to storage.
 function saveTransactions(transactions) {
   writeStorage(userKey("transactions", currentUser), transactions);
 }
 
-// Handles the Add/Edit Transaction form submit.
 function addOrEditTransaction(event) {
   event.preventDefault();
 
@@ -277,7 +222,6 @@ function addOrEditTransaction(event) {
   const date = document.getElementById("transactionDate").value;
   const category = document.getElementById("transactionCategory").value;
 
-  // ---- Validate every field before saving anything ----
   clearFieldError("transactionDescription");
   clearFieldError("transactionAmount");
   clearFieldError("transactionDate");
@@ -307,15 +251,13 @@ function addOrEditTransaction(event) {
   const transactions = loadTransactions();
 
   if (editingTransactionId) {
-    // ---- EDIT MODE: find the matching transaction and update it ----
     const index = transactions.findIndex((t) => t.id === editingTransactionId);
     if (index !== -1) {
       transactions[index] = { id: editingTransactionId, type, description, amount, date, category };
     }
     showToast("Transaction updated successfully.");
   } else {
-    // ---- ADD MODE: build a brand new transaction object ----
-    // Date.now() in milliseconds is unique enough for a single-user app.
+    // Timestamp collision probability is negligible in single-user local state
     const newTransaction = {
       id: Date.now().toString(),
       type,
@@ -330,10 +272,9 @@ function addOrEditTransaction(event) {
 
   saveTransactions(transactions);
   closeTransactionModal();
-  refreshDashboard(); // always refresh everything after a change
+  refreshDashboard();
 }
 
-// Opens the modal already filled in with an existing transaction's data.
 function editTransaction(id) {
   const transactions = loadTransactions();
   const transaction = transactions.find((t) => t.id === id);
@@ -354,7 +295,6 @@ function editTransaction(id) {
   openTransactionModal();
 }
 
-// Removes a transaction by id. Always goes through the confirm dialog first.
 function deleteTransaction(id) {
   openConfirmDialog(
     "Delete this transaction?",
@@ -369,7 +309,6 @@ function deleteTransaction(id) {
   );
 }
 
-// Loops through all transactions once and adds up income vs expense.
 function calculateTotals(transactions) {
   let totalIncome = 0;
   let totalExpense = 0;
@@ -390,14 +329,8 @@ function calculateTotals(transactions) {
   };
 }
 
+// --- Rendering: dashboard metrics & charts ---
 
-/* 6. RENDERING
-   These functions read from storage and paint the screen.
-   refreshDashboard() is the "master function" — call THIS after
-   any data change, and it takes care of cards + table + chart.
-*/
-
-// The one function every other piece of code calls after a change.
 function refreshDashboard() {
   const transactions = loadTransactions();
   renderCards(transactions);
@@ -405,7 +338,6 @@ function refreshDashboard() {
   renderChart(transactions);
 }
 
-// ---- 6a. Summary Cards ----
 function renderCards(transactions) {
   const totals = calculateTotals(transactions);
 
@@ -414,8 +346,6 @@ function renderCards(transactions) {
   document.getElementById("cardExpense").textContent = formatCurrency(totals.totalExpense);
   document.getElementById("cardCount").textContent = totals.count;
 }
-
-// ---- 6b. Transaction Table ----
 
 function renderTable(transactions) {
   const tableBody = document.getElementById("transactionTableBody");
@@ -431,7 +361,6 @@ function renderTable(transactions) {
     emptyState.classList.add("hidden");
   }
 
-  // Show newest transactions first.
   const sorted = [...visibleTransactions].sort((a, b) => b.date.localeCompare(a.date));
 
   sorted.forEach((t) => {
@@ -459,7 +388,6 @@ function renderTable(transactions) {
     tableBody.appendChild(row);
   });
 
-  // Wire up the edit/delete buttons we just created.
   tableBody.querySelectorAll(".edit-btn").forEach((btn) => {
     btn.addEventListener("click", () => editTransaction(btn.dataset.id));
   });
@@ -468,26 +396,18 @@ function renderTable(transactions) {
   });
 }
 
-/* Basic protection so a transaction description can't break the page
- layout by injecting HTML tags into the table. */
-
+// Prevents cross-site script injection via unescaped transaction descriptions
 function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
 
-// ---- 6c. Cash Flow Chart ----
-
-/* Keeps a reference to the live Chart.js instance so we can destroy
-it before drawing a new one (otherwise charts stack on top of each other).*/
-
 let cashFlowChart = null;
 
 function renderChart(transactions) {
   const canvas = document.getElementById("cashFlowChart");
 
-  // Group totals by date so each date gets one income bar + one expense bar.
   const totalsByDate = {};
   transactions.forEach((t) => {
     if (!totalsByDate[t.date]) {
@@ -500,12 +420,11 @@ function renderChart(transactions) {
   const incomeData = sortedDates.map((date) => totalsByDate[date].income);
   const expenseData = sortedDates.map((date) => totalsByDate[date].expense);
 
-  // Destroy any previous chart before drawing a new one.
+  // Destroy previous Chart instance to free context and prevent memory leaks
   if (cashFlowChart) {
     cashFlowChart.destroy();
   }
 
-  // Read the current text color from CSS so labels stay legible in dark mode.
   const textColor = getComputedStyle(document.body).getPropertyValue("--chart-text-color").trim();
   const gridColor = getComputedStyle(document.body).getPropertyValue("--color-border").trim();
 
@@ -534,7 +453,7 @@ function renderChart(transactions) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: false }, // we already have our own legend in the panel header
+        legend: { display: false },
       },
       scales: {
         x: {
@@ -551,11 +470,11 @@ function renderChart(transactions) {
   });
 }
 
+// --- Search & Filtering ---
 
-// ---------  7. SEARCH & FILTER ---------- 
 function applySearchAndFilter(transactions) {
   const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
-  const filterType = document.getElementById("filterType").value; // "all" | "income" | "expense"
+  const filterType = document.getElementById("filterType").value;
 
   return transactions.filter((t) => {
     const matchesType = filterType === "all" || t.type === filterType;
@@ -567,7 +486,6 @@ function applySearchAndFilter(transactions) {
   });
 }
 
-// Called directly by the search input / filter dropdown's event listeners.
 function searchTransactions() {
   renderTable(loadTransactions());
 }
@@ -576,10 +494,8 @@ function filterTransactions() {
   renderTable(loadTransactions());
 }
 
+// --- Settings: user preferences ---
 
-// ----- 8. SETTINGS — profile, currency, dark mode, reset ------
-
-// Currency code -> symbol lookup used by formatCurrency().
 const CURRENCY_SYMBOLS = {
   USD: "$",
   EUR: "€",
@@ -588,8 +504,7 @@ const CURRENCY_SYMBOLS = {
   JPY: "¥",
 };
 
-// Formats a number using the user's chosen currency symbol.
-// JPY conventionally has no decimal places, everything else uses 2.
+// JPY does not use decimal subdivisions in accounting presentation
 function formatCurrency(amount) {
   const settings = loadSettingsData();
   const symbol = CURRENCY_SYMBOLS[settings.currency] || "$";
@@ -597,7 +512,6 @@ function formatCurrency(amount) {
   return `${symbol}${amount.toFixed(decimals)}`;
 }
 
-// Reads this user's settings object
 function loadSettingsData() {
   return readStorage(userKey("settings", currentUser), {
     fullName: currentUser,
@@ -605,7 +519,6 @@ function loadSettingsData() {
   });
 }
 
-// Applies saved settings (name, currency, dark mode) to the UI on login/load.
 function loadSettings() {
   const settings = loadSettingsData();
 
@@ -618,7 +531,6 @@ function loadSettings() {
   document.body.classList.toggle("dark", isDark);
 }
 
-// Handles the Settings form submit (Save Changes button).
 function saveSettings(event) {
   event.preventDefault();
 
@@ -630,20 +542,17 @@ function saveSettings(event) {
   document.getElementById("topbarUsername").textContent = fullName;
 
   showToast("Settings saved successfully.");
-  refreshDashboard(); // re-render so every amount uses the new currency symbol
+  refreshDashboard();
 }
 
-// Handles the Dark Mode switch in Settings.
 function toggleDarkMode(event) {
   const isDark = event.target.checked;
   document.body.classList.toggle("dark", isDark);
   writeStorage(userKey("theme", currentUser), isDark ? "dark" : "light");
 
-  // Re-draw the chart so its text color matches the new theme immediately.
   renderChart(loadTransactions());
 }
 
-// Handles the "Reset All Data" button — wipes this user's transactions only.
 function resetAllData() {
   openConfirmDialog(
     "Reset all data?",
@@ -656,14 +565,8 @@ function resetAllData() {
   );
 }
 
+// --- Modals: transaction form & confirmation dialog ---
 
-/* 9. MODALS
-   Two modals share the same overlay pattern:
-   - #transactionModal -> Add / Edit Transaction form
-   - #confirmModal     -> generic Yes/No dialog (delete + reset)
- */
-
-// ---- Add/Edit Transaction modal ----
 function openTransactionModal() {
   document.getElementById("transactionModal").classList.remove("hidden");
 }
@@ -672,26 +575,22 @@ function closeTransactionModal() {
   document.getElementById("transactionModal").classList.add("hidden");
   document.getElementById("transactionForm").reset();
 
-  // Clear any leftover validation messages.
   ["transactionDescription", "transactionAmount", "transactionDate", "transactionCategory"].forEach(
     clearFieldError
   );
 
-  // Reset back to "Add" mode for next time the modal opens.
   editingTransactionId = null;
   document.getElementById("transactionModalTitle").innerHTML =
     '<i class="ri-add-circle-line"></i> Add Transaction';
   document.getElementById("transactionSubmitLabel").textContent = "Save Transaction";
 }
 
-// Opens a blank "Add Transaction" modal, defaulting the date to today.
 function openAddTransactionModal() {
-  closeTransactionModal(); // ensures a clean slate / "add" mode
+  closeTransactionModal();
   document.getElementById("transactionDate").value = new Date().toISOString().split("T")[0];
   openTransactionModal();
 }
 
-// ---- Confirm dialog (reused for Delete + Reset) ----
 let pendingConfirmAction = null;
 
 function openConfirmDialog(title, message, onConfirm) {
@@ -706,16 +605,13 @@ function closeConfirmDialog() {
   pendingConfirmAction = null;
 }
 
+// --- Event Listeners: DOM event bindings ---
 
-// ------- 10. EVENT LISTENERS -------
 function setupEventListeners() {
-
-  // ---- Auth forms ----
   document.getElementById("registerForm").addEventListener("submit", register);
   document.getElementById("loginForm").addEventListener("submit", login);
   document.getElementById("logoutBtn").addEventListener("click", logout);
 
-  // Links that swap between the Register and Login screens.
   document.getElementById("goToLogin").addEventListener("click", (e) => {
     e.preventDefault();
     showAuthPage("loginPage");
@@ -725,7 +621,6 @@ function setupEventListeners() {
     showAuthPage("registerPage");
   });
 
-  // Eye icon buttons that toggle a password field between hidden/visible text.
   document.querySelectorAll(".toggle-visibility").forEach((btn) => {
     btn.addEventListener("click", () => {
       const input = document.getElementById(btn.dataset.target);
@@ -736,34 +631,42 @@ function setupEventListeners() {
     });
   });
 
-  // ---- Sidebar navigation ----
+  // Navigation & off-canvas drawer controls
   document.querySelectorAll(".nav-link").forEach((link) => {
-    link.addEventListener("click", () => showAppPage(link.dataset.page));
+    link.addEventListener("click", () => {
+      showAppPage(link.dataset.page);
+      closeSidebar();
+    });
   });
 
-  // ---- Add Transaction button (sidebar) ----
-  document.getElementById("addTransactionBtn").addEventListener("click", openAddTransactionModal);
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarClose = document.getElementById("sidebarClose");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
 
-  // ---- Transaction modal controls ----
+  if (sidebarToggle) sidebarToggle.addEventListener("click", toggleSidebar);
+  if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
+  if (sidebarOverlay) sidebarOverlay.addEventListener("click", closeSidebar);
+
+  document.getElementById("addTransactionBtn").addEventListener("click", () => {
+    openAddTransactionModal();
+    closeSidebar();
+  });
+
   document.getElementById("transactionForm").addEventListener("submit", addOrEditTransaction);
   document.getElementById("closeTransactionModal").addEventListener("click", closeTransactionModal);
   document.getElementById("cancelTransactionBtn").addEventListener("click", closeTransactionModal);
 
-  // Clicking the dark overlay outside the modal card also closes it.
   document.getElementById("transactionModal").addEventListener("click", (e) => {
     if (e.target.id === "transactionModal") closeTransactionModal();
   });
 
-  // ---- Search & Filter ----
   document.getElementById("searchInput").addEventListener("input", searchTransactions);
   document.getElementById("filterType").addEventListener("change", filterTransactions);
 
-  // ---- Settings page ----
   document.getElementById("settingsForm").addEventListener("submit", saveSettings);
   document.getElementById("darkModeToggle").addEventListener("change", toggleDarkMode);
   document.getElementById("resetDataBtn").addEventListener("click", resetAllData);
 
-  // ---- Confirm dialog ----
   document.getElementById("confirmOkBtn").addEventListener("click", () => {
     if (pendingConfirmAction) pendingConfirmAction();
     closeConfirmDialog();
@@ -774,10 +677,9 @@ function setupEventListeners() {
   });
 }
 
+// --- Initialization ---
 
-/* 11. APP INIT This is the very first code that 
- runs once the HTML has finished loading. */
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
-  checkExistingSession(); // skips straight to dashboard if already logged in
+  checkExistingSession();
 });
