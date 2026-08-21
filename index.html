@@ -6,31 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FinTrack Pro | Enterprise Finance Ledger</title>
 
-    <!--  Google Fonts -->
+    <!-- Typography assets -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
 
-    <!--  Icon Libraries -->
+    <!-- Icon packages -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
 
-    <!-- Styleshee -->
+    <!-- Application stylesheets -->
     <link rel="stylesheet" href="style.css" />
-
-    <!-- favicon -->
-     <link rel="shortcut icon" href="./assets/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="MediaQuery.css" />
 </head>
 
 <body>
 
-    <!-- TOAST NOTIFICATION CONTAINER (success / error) -->
+    <!-- Notification toast container -->
     <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-    <!-------- 1. REGISTER PAGE  ------->
+    <!-- Registration view -->
     <section id="registerPage" class="auth-page">
         <div class="auth-backdrop"></div>
 
@@ -81,7 +79,7 @@
         </div>
     </section>
 
-    <!---------- 2. LOGIN PAGE ------------>
+    <!-- Login view -->
     <section id="loginPage" class="auth-page hidden">
         <div class="auth-backdrop"></div>
 
@@ -133,17 +131,20 @@
         </div>
     </section>
 
-    <!-------- 3. MAIN APPLICATION (Sidebar + Dashboard + Settings)---------->
+    <!-- Main application shell -->
     <div id="appShell" class="app-shell hidden">
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-        <!-- ---------- SIDEBAR ---------- -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <i class="ri-stack-line"></i>
                 <div>
                     <h1>FinTrack Pro</h1>
                     <span>Enterprise Finance</span>
                 </div>
+                <button id="sidebarClose" class="sidebar-close" aria-label="Close sidebar">
+                    <i class="ri-close-line"></i>
+                </button>
             </div>
 
             <nav class="sidebar-nav">
@@ -162,14 +163,16 @@
             </div>
         </aside>
 
-        <!-- ---------- MAIN CONTENT ---------- -->
         <div class="main-content">
-
-            <!-- Topbar shared across pages -->
             <header class="topbar">
                 <div class="topbar-gold-rule"></div>
                 <div class="topbar-inner">
-                    <div class="topbar-page-title" id="topbarTitle">Financial Overview</div>
+                    <div class="topbar-left">
+                        <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle navigation">
+                            <i class="ri-menu-line"></i>
+                        </button>
+                        <div class="topbar-page-title" id="topbarTitle">Financial Overview</div>
+                    </div>
                     <div class="topbar-user">
                         <span class="user-chip">
                             <i class="ri-user-3-fill"></i>
@@ -182,14 +185,13 @@
                 </div>
             </header>
 
-            <!----------- DASHBOARD PAGE ----------->
+            <!-- Dashboard view -->
             <section id="dashboardPage" class="page active">
                 <div class="page-heading">
                     <h2>Financial Overview</h2>
                     <p>Real-time tracking application</p>
                 </div>
 
-                <!-- Summary cards -->
                 <div class="cards-grid">
                     <div class="stat-card">
                         <div class="stat-icon icon-balance"><i class="ri-bank-line"></i></div>
@@ -213,7 +215,6 @@
                     </div>
                 </div>
 
-                <!------------- Chart -------------->
                 <div class="content-grid">
                     <div class="panel chart-panel">
                         <div class="panel-header">
@@ -229,7 +230,6 @@
                     </div>
                 </div>
 
-                <!------ Transactions table ------->
                 <div class="panel table-panel">
                     <div class="panel-header">
                         <h3><i class="ri-file-list-3-line"></i> All Transactions</h3>
@@ -258,12 +258,9 @@
                                     <th class="text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="transactionTableBody">
-                                <!-- Rows injected by script.js -->
-                            </tbody>
+                            <tbody id="transactionTableBody"></tbody>
                         </table>
 
-                        <!-- Empty state shown by JS when there are no transactions -->
                         <div class="empty-state hidden" id="emptyState">
                             <i class="ri-inbox-2-line"></i>
                             <p>No transactions yet</p>
@@ -273,7 +270,7 @@
                 </div>
             </section>
 
-            <!---------- SETTINGS PAGE  --------->
+            <!-- Settings view -->
             <section id="settingsPage" class="page">
                 <div class="page-heading">
                     <h2>Settings</h2>
@@ -337,11 +334,10 @@
                     </div>
                 </div>
             </section>
-
         </div>
     </div>
 
-    <!------------ 4. ADD / EDIT TRANSACTION MODAL ----------->
+    <!-- Transaction editor modal -->
     <div id="transactionModal" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header">
@@ -408,7 +404,7 @@
         </div>
     </div>
 
-    <!----- 5. CONFIRM DIALOG (used for Delete + Reset All Data) ------>
+    <!-- Action confirmation modal -->
     <div id="confirmModal" class="modal-overlay hidden">
         <div class="modal-card confirm-card">
             <div class="confirm-icon"><i class="ri-error-warning-line"></i></div>
@@ -421,9 +417,7 @@
         </div>
     </div>
 
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-
     <script src="script.js"></script>
 </body>
 
