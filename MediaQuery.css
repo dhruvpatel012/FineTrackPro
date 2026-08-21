@@ -15,7 +15,8 @@
 
 /* Tablet viewport: off-canvas drawer navigation, 2-column metrics grid */
 @media (max-width: 1024px) {
-  html, body {
+  html,
+  body {
     min-width: 0;
   }
 
@@ -27,7 +28,9 @@
     z-index: 99;
     opacity: 0;
     visibility: hidden;
-    transition: opacity var(--transition), visibility var(--transition);
+    transition:
+      opacity var(--transition),
+      visibility var(--transition);
   }
 
   .sidebar-overlay.sidebar-overlay-active {
@@ -65,7 +68,9 @@
     font-size: 1.3rem;
     border-radius: var(--radius-sm);
     margin-left: auto;
-    transition: background var(--transition), color var(--transition);
+    transition:
+      background var(--transition),
+      color var(--transition);
   }
 
   .sidebar-close:hover {
@@ -84,7 +89,9 @@
     font-size: 1.35rem;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
-    transition: background var(--transition), color var(--transition);
+    transition:
+      background var(--transition),
+      color var(--transition);
   }
 
   .sidebar-toggle:hover {
