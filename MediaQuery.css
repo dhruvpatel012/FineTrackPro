@@ -18,6 +18,9 @@
   html,
   body {
     min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .sidebar-overlay {
@@ -214,14 +217,18 @@
   .modal-overlay {
     padding: 12px;
     align-items: flex-end;
+    overflow-x: hidden;
   }
 
   .modal-card {
+    width: 100%;
     max-width: 100%;
     max-height: calc(100vh - 24px);
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
+    overflow-x: hidden;
     border-radius: var(--radius-md);
+    box-sizing: border-box;
   }
 
   .modal-header {
@@ -231,11 +238,16 @@
   .modal-body {
     padding: 16px;
     gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .form-row {
     grid-template-columns: 1fr;
     gap: 14px;
+    width: 100%;
+    min-width: 0;
   }
 
   .modal-footer {
